@@ -1,0 +1,12 @@
+div::after {
+  width: 100px;
+  height: 100px;
+  color: blue;
+  transition: 1.0s;
+}
+
+div::befero {
+  width: 100px;
+  height: 100px;
+  color: red;
+}
