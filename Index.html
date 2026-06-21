@@ -1,18 +1,398 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE-edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="stle.css" />
-    <title>SITE DE PROGAMACAO</title>
-  </head> 
-  
-  <body>
-    <div class="button">
-      <button class="btn">
-        COMFIRMA
-      </button>
-    </div>
-  </body>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>ZeroG Horror</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+height:100vh;
+overflow:hidden;
+background:#000;
+color:white;
+}
+
+#bg{
+position:fixed;
+inset:0;
+background:url("1000002208.jpg") center/cover;
+filter:brightness(.5);
+}
+
+#ui{
+position:relative;
+z-index:2;
+height:100vh;
+display:flex;
+flex-direction:column;
+}
+
+#top{
+padding:15px;
+display:flex;
+justify-content:space-between;
+background:rgba(0,0,0,.6);
+border-bottom:1px solid red;
+}
+
+#title{
+color:red;
+font-weight:bold;
+font-size:20px;
+}
+
+#character{
+flex:1;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:130px;
+opacity:.15;
+}
+
+#dialog{
+background:rgba(0,0,0,.9);
+padding:20px;
+border-top:2px solid red;
+min-height:220px;
+}
+
+#speaker{
+color:red;
+font-size:22px;
+margin-bottom:10px;
+}
+
+#text{
+line-height:1.7;
+min-height:100px;
+}
+
+#continue{
+margin-top:15px;
+padding:12px;
+background:#111;
+border:1px solid red;
+color:white;
+border-radius:10px;
+cursor:pointer;
+}
+
+.choice-screen{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.92);
+backdrop-filter:blur(5px);
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:999;
+}
+
+.hidden{
+display:none;
+}
+
+.choice-container{
+width:90%;
+max-width:500px;
+text-align:center;
+}
+
+.choice-title{
+font-size:30px;
+color:red;
+margin-bottom:10px;
+text-shadow:0 0 20px red;
+}
+
+.choice-subtitle{
+margin-bottom:20px;
+color:#ccc;
+}
+
+.choice-btn{
+width:100%;
+padding:15px;
+margin:8px 0;
+background:#111;
+border:1px solid red;
+color:white;
+border-radius:10px;
+cursor:pointer;
+transition:.3s;
+}
+
+.choice-btn:hover{
+background:red;
+}
+
+.shake{
+animation:shake .15s infinite;
+}
+
+@keyframes shake{
+0%{transform:translate(2px,0);}
+50%{transform:translate(-2px,2px);}
+100%{transform:translate(2px,-2px);}
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="bg"></div>
+
+<div id="ui">
+
+<div id="top">
+<div id="title">ZERO G HORROR</div>
+<div>
+Medo: <span id="fear">0</span> |
+Confiança: <span id="trust">0</span>
+</div>
+</div>
+
+<div id="character">☠</div>
+
+<div id="dialog">
+
+<div id="speaker">???</div>
+
+<div id="text">
+Carregando...
+</div>
+
+<button id="continue">
+Continuar
+</button>
+
+</div>
+
+</div>
+
+<div id="choiceScreen" class="choice-screen hidden">
+
+<div class="choice-container">
+
+<div class="choice-title">
+UMA DECISÃO DEVE SER TOMADA
+</div>
+
+<div class="choice-subtitle">
+Pense cuidadosamente.
+</div>
+
+<div id="choices"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const state={
+fear:0,
+trust:0
+};
+
+const scenes={
+
+start:{
+speaker:"Voz",
+text:"Você acorda em um lugar frio. Há um som distante vindo da escuridão.",
+next:"hall"
+},
+
+hall:{
+speaker:"???",
+text:"Você encontra três caminhos.",
+choices:[
+{
+label:"Pegar a chave enferrujada",
+next:"key",
+effect(){
+state.trust++;
+}
+},
+{
+label:"Seguir a música",
+next:"music",
+effect(){
+state.fear++;
+}
+},
+{
+label:"Abrir a porta escura",
+next:"door",
+effect(){
+state.fear+=2;
+}
+}
+]
+},
+
+key:{
+speaker:"Voz",
+text:"A chave parece mais pesada do que deveria.",
+next:"final"
+},
+
+music:{
+speaker:"Figura",
+text:"Uma sombra observa você em silêncio.",
+next:"final"
+},
+
+door:{
+speaker:"Narrador",
+text:"Algo abre a porta pelo outro lado.",
+next:"final"
+},
+
+final:{
+speaker:"Narrador",
+text:"Sua decisão mudou o rumo da história.",
+ending:true
+}
+
+};
+
+const speaker=document.getElementById("speaker");
+const text=document.getElementById("text");
+const fear=document.getElementById("fear");
+const trust=document.getElementById("trust");
+const continueBtn=document.getElementById("continue");
+
+const choiceScreen=document.getElementById("choiceScreen");
+const choices=document.getElementById("choices");
+
+let currentScene="start";
+
+function typeText(msg){
+
+text.innerHTML="";
+
+let i=0;
+
+const timer=setInterval(()=>{
+
+text.innerHTML+=msg[i];
+
+i++;
+
+if(i>=msg.length){
+clearInterval(timer);
+}
+
+},20);
+
+}
+
+function showChoices(scene){
+
+choices.innerHTML="";
+
+scene.choices.forEach(choice=>{
+
+const btn=document.createElement("button");
+
+btn.className="choice-btn";
+
+btn.textContent=choice.label;
+
+btn.onclick=()=>{
+
+if(choice.effect){
+choice.effect();
+}
+
+fear.innerHTML=state.fear;
+trust.innerHTML=state.trust;
+
+choiceScreen.classList.add("hidden");
+
+renderScene(choice.next);
+
+};
+
+choices.appendChild(btn);
+
+});
+
+choiceScreen.classList.remove("hidden");
+
+}
+
+function renderScene(id){
+
+currentScene=id;
+
+const scene=scenes[id];
+
+speaker.innerHTML=scene.speaker;
+
+typeText(scene.text);
+
+fear.innerHTML=state.fear;
+trust.innerHTML=state.trust;
+
+localStorage.setItem("save",JSON.stringify({
+scene:id,
+state
+}));
+
+if(scene.choices){
+
+continueBtn.style.display="none";
+
+setTimeout(()=>{
+showChoices(scene);
+},1500);
+
+}else if(scene.next){
+
+continueBtn.style.display="block";
+
+continueBtn.onclick=()=>{
+renderScene(scene.next);
+};
+
+}else{
+
+continueBtn.style.display="none";
+}
+
+}
+
+const save=localStorage.getItem("save");
+
+if(save){
+
+const data=JSON.parse(save);
+
+Object.assign(state,data.state);
+
+renderScene(data.scene);
+
+}else{
+
+renderScene("start");
+
+}
+
+</script>
+
+</body>
 </html>
